@@ -177,7 +177,8 @@
       { id: 'q4', text: "Have super strength or super intelligence?", options: ["Strength", "Intelligence"] },
       { id: 'q5', text: "Cricket or football?", options: ["Football", "Cricket"] },
       { id: 'q6', text: "Get 10 CG or go on friend's trip?", options: ["10 CG", "Trip"] },
-      { id: 'q7', text: "Be Spiderman or Iron Man?", options: ["Spiderman", "Iron Man"] }
+      { id: 'q7', text: "Have Super Speed or Invisibility?", options: ["Super Speed", "Invisibility"] },
+      { id: 'q8', text: "Be Spiderman or Iron Man?", options: ["Spiderman", "Iron Man"] }
     ];
 
     let currentIndex = 0;
@@ -189,27 +190,35 @@
     const thankYouScreen = document.getElementById("thankYou");
 
     function loadQuestion() {
-      const current = questions[currentIndex];
-      questionEl.innerText = current.text;
+  const current = questions[currentIndex];
+  questionEl.innerText = current.text;
 
-      option1Btn.querySelector("span").innerText = current.options[0];
-      option2Btn.querySelector("span").innerText = current.options[1];
-      option1Btn.querySelector(".fill").style.width = "0%";
-      option2Btn.querySelector(".fill").style.width = "0%";
+  option1Btn.querySelector("span").innerText = current.options[0];
+  option2Btn.querySelector("span").innerText = current.options[1];
+  option1Btn.querySelector(".fill").style.width = "0%";
+  option2Btn.querySelector(".fill").style.width = "0%";
 
-      option1Btn.disabled = false;
-      option2Btn.disabled = false;
-      nextBtn.disabled = true;
+  const votePath = `votes/${current.id}`;
 
-      const votePath = `votes/${current.id}`;
-      db.ref(votePath).on('value', snapshot => {
-        const votes = snapshot.val() || [0, 0];
-        if (votes[0] + votes[1] > 0) {
-          showResults(votes);
-          nextBtn.disabled = false;
-        }
-      });
-    }
+  if (localStorage.getItem(current.id)) {
+    // User already voted — show results immediately
+    db.ref(votePath).once('value', snapshot => {
+      const votes = snapshot.val() || [0, 0];
+      showResults(votes);
+    });
+
+    option1Btn.disabled = true;
+    option2Btn.disabled = true;
+    nextBtn.disabled = false;
+  } else {
+    // User has not voted yet
+    option1Btn.disabled = false;
+    option2Btn.disabled = false;
+    nextBtn.disabled = true;
+  }
+}
+
+
 
     function vote(optionIndex) {
       const current = questions[currentIndex];
